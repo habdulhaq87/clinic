@@ -6,9 +6,6 @@ import os
 # Path to JSON file (located in the same directory as this script)
 JSON_PATH = "./clinic.json"
 
-# Debug: Check if the JSON path is correct
-st.write(f"JSON Path: {os.path.abspath(JSON_PATH)}")
-
 # Load the dataset
 @st.cache_data
 def load_data():
@@ -27,30 +24,19 @@ def load_data():
 
 # Append a new record to the JSON file
 def append_to_json(new_record):
-    try:
-        # Check if the file exists
-        if os.path.exists(JSON_PATH):
-            with open(JSON_PATH, "r", encoding="utf-8") as f:
-                data = json.load(f)
-        else:
-            data = []
+    if os.path.exists(JSON_PATH):
+        with open(JSON_PATH, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    else:
+        data = []
 
-        # Debug: Display existing data
-        st.write("Existing Data in JSON:", data)
+    # Append the new record
+    data.append(new_record.to_dict(orient='records')[0])
 
-        # Append the new record
-        data.append(new_record.to_dict(orient='records')[0])
-
-        # Debug: Display updated data
-        st.write("Updated Data to Save:", data)
-
-        # Save updated data back to JSON
-        with open(JSON_PATH, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=4)
-        
-        st.success("Record has been successfully added to the JSON file!")
-    except Exception as e:
-        st.error(f"An error occurred while saving the data: {e}")
+    # Save updated data back to JSON
+    with open(JSON_PATH, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=4)
+    st.success("Record has been successfully added to the JSON file!")
 
 # Styling the app
 st.set_page_config(page_title="Dental Clinic Dataroom", layout="wide")
