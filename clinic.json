@@ -46,5 +46,17 @@
         "Tooth/Teeth": "Upper Right Incisor",
         "Cost": "$750",
         "Payment Status": "Paid"
+    },
+    {
+        "Patient ID": "hhasd",
+        "Name": "akj",
+        "Contact": "54",
+        "Appointment Date": "2024-11-16",
+        "Time": "09:36:00",
+        "Dentist": "",
+        "Procedure": "",
+        "Tooth/Teeth": "",
+        "Cost": "$0.00",
+        "Payment Status": "Paid"
     }
 ]
