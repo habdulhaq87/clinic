@@ -1,12 +1,13 @@
 import streamlit as st
 import pandas as pd
 import json
+import os
 from github import Github
 
 # GitHub Repository Configuration
-GITHUB_TOKEN = st.secrets["github"]["token"]  # Use Streamlit secrets for the GitHub token
+GITHUB_TOKEN = st.secrets["github"]["token"]  # Use Streamlit secrets for GitHub token
 REPO_NAME = "habdulhaq87/clinic"
-FILE_PATH = "clinic.json"  # Path to the JSON file in the repository
+FILE_PATH = "clinic.json"  # Path to the file in the repository
 BRANCH_NAME = "main"
 
 # Initialize GitHub API
@@ -21,15 +22,12 @@ except Exception as e:
 @st.cache_data
 def load_data():
     try:
-        # Fetch the JSON file content from GitHub
+        # Fetch file content from GitHub
         file = repo.get_contents(FILE_PATH, ref=BRANCH_NAME)
         data = json.loads(file.decoded_content.decode())
         df = pd.DataFrame(data)
-
-        # Ensure 'Cost' column is numeric and clean any formatting
-        if "Cost" in df.columns:
-            df["Cost"] = df["Cost"].replace('[\$,]', '', regex=True).astype(float)
-
+        # Ensure 'Cost' column is numeric
+        df["Cost"] = df["Cost"].replace('[\$,]', '', regex=True).astype(float)
         return df
     except Exception as e:
         st.error(f"Error fetching data from GitHub: {e}")
@@ -61,9 +59,6 @@ def append_to_github(new_record):
 def main():
     st.sidebar.title("Dental Clinic Dataroom")
 
-    # Load data
-    df = load_data()
-
     # Navigation options
     options = ["Dashboard", "View Records", "Add New Record", "Search Appointments", "Statistics"]
     choice = st.sidebar.radio("Select a page", options)
@@ -74,14 +69,15 @@ def main():
 
     elif choice == "View Records":
         st.write("## Patient Records")
-        
-        # Display the records in a table
-        if df.empty:
-            st.warning("No records found in the JSON file.")
-        else:
-            st.dataframe(df)
 
-        # Add download button for the JSON file
+        # Add a refresh button
+        if st.button("Refresh Records"):
+            st.cache_data.clear()  # Clear the cache to reload fresh data
+
+        # Load the data
+        df = load_data()
+        st.dataframe(df)
+
         st.download_button(
             label="Download Records as JSON",
             data=json.dumps(df.to_dict(orient="records"), indent=4),
@@ -126,31 +122,11 @@ def main():
                 # Append the new record directly to GitHub
                 append_to_github(new_record)
 
-    elif choice == "Search Appointments":
-        st.write("## Search Appointments")
-
-        # Search by Patient Name
-        search_name = st.text_input("Search by Patient Name", placeholder="Enter patient name...")
-        if search_name:
-            filtered_data = df[df["Name"].str.contains(search_name, case=False, na=False)]
-            if not filtered_data.empty:
-                st.success(f"Found {len(filtered_data)} record(s) for '{search_name}'")
-                st.dataframe(filtered_data)
-            else:
-                st.warning(f"No records found for '{search_name}'")
-
-        # Filter by Appointment Date
-        search_date = st.date_input("Filter by Appointment Date")
-        if search_date:
-            filtered_date = df[df["Appointment Date"] == search_date.strftime("%Y-%m-%d")]
-            if not filtered_date.empty:
-                st.success(f"Found {len(filtered_date)} appointment(s) on {search_date}")
-                st.dataframe(filtered_date)
-            else:
-                st.warning(f"No appointments found on {search_date}")
-
     elif choice == "Statistics":
         st.write("## Clinic Statistics")
+
+        # Load data
+        df = load_data()
 
         # Total Patients
         total_patients = df["Patient ID"].nunique()
