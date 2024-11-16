@@ -1,0 +1,57 @@
+# Update the clinic.json file with the provided data, replacing any existing content
+updated_data = [
+    {
+        "Patient ID": "P001",
+        "Name": "John Doe",
+        "Contact": "123-456-7890",
+        "Appointment Date": "2024-11-20",
+        "Time": "10:00 AM",
+        "Dentist": "Dr. Smith",
+        "Procedure": "Cleaning",
+        "Tooth/Teeth": "-",
+        "Cost": "$100",
+        "Payment Status": "Paid"
+    },
+    {
+        "Patient ID": "P002",
+        "Name": "Jane Smith",
+        "Contact": "987-654-3210",
+        "Appointment Date": "2024-11-20",
+        "Time": "11:30 AM",
+        "Dentist": "Dr. Johnson",
+        "Procedure": "Filling",
+        "Tooth/Teeth": "Upper Left Molar",
+        "Cost": "$200",
+        "Payment Status": "Unpaid"
+    },
+    {
+        "Patient ID": "P003",
+        "Name": "Alex Brown",
+        "Contact": "555-123-4567",
+        "Appointment Date": "2024-11-21",
+        "Time": "9:00 AM",
+        "Dentist": "Dr. Williams",
+        "Procedure": "Root Canal",
+        "Tooth/Teeth": "Lower Right Molar",
+        "Cost": "$500",
+        "Payment Status": "Partial"
+    },
+    {
+        "Patient ID": "P004",
+        "Name": "Mary Johnson",
+        "Contact": "444-321-8765",
+        "Appointment Date": "2024-11-21",
+        "Time": "1:00 PM",
+        "Dentist": "Dr. Smith",
+        "Procedure": "Crown Placement",
+        "Tooth/Teeth": "Upper Right Incisor",
+        "Cost": "$750",
+        "Payment Status": "Paid"
+    }
+]
+
+# Save the updated data to clinic.json
+with open(json_file_path, "w", encoding="utf-8") as json_file:
+    json.dump(updated_data, json_file, indent=4)
+
+json_file_path
