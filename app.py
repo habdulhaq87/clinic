@@ -3,8 +3,8 @@ import pandas as pd
 import json
 import os
 
-# Absolute path to the JSON file
-JSON_PATH = "/clinic.json"
+# Path to JSON file (located in the same directory as this script)
+JSON_PATH = "./clinic.json"
 
 # Load the dataset
 @st.cache_data
