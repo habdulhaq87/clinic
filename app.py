@@ -1,34 +1,42 @@
 import streamlit as st
 import pandas as pd
+import json
 import os
 
-# Get the absolute path to the CSV file
-DATA_PATH = os.path.abspath("clinic.csv")
+# Path to JSON file
+JSON_PATH = os.path.abspath("clinic.json")
 
 # Load the dataset
 @st.cache_data
 def load_data():
-    if os.path.exists(DATA_PATH):
-        # Load the data
-        df = pd.read_csv(DATA_PATH)
-
-        # Strip the '$' symbol from the 'Cost' column and convert to float
-        if "Cost" in df.columns:
-            df["Cost"] = df["Cost"].replace('[\$,]', '', regex=True).astype(float)
-
+    if os.path.exists(JSON_PATH):
+        # Load JSON data
+        with open(JSON_PATH, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        # Convert to DataFrame
+        df = pd.DataFrame(data)
+        # Ensure 'Cost' column is numeric
+        df["Cost"] = df["Cost"].replace('[\$,]', '', regex=True).astype(float)
         return df
     else:
-        st.error(f"Data file not found at {DATA_PATH}. Please ensure the file exists.")
+        st.error(f"Data file not found at {JSON_PATH}. Please ensure the file exists.")
         st.stop()
 
-# Append a new record to the CSV file
-def append_to_csv(new_record):
-    # Convert the new record DataFrame to CSV format and append to the file
-    with open(DATA_PATH, mode='a', encoding='utf-8') as f:
-        new_record.to_csv(f, header=False, index=False)
-        f.flush()  # Ensure all data is written to the buffer
-        os.fsync(f.fileno())  # Force write to disk
-    st.success("Record has been successfully added to the CSV file!")
+# Append a new record to the JSON file
+def append_to_json(new_record):
+    if os.path.exists(JSON_PATH):
+        with open(JSON_PATH, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    else:
+        data = []
+
+    # Append the new record
+    data.append(new_record.to_dict(orient='records')[0])
+
+    # Save updated data back to JSON
+    with open(JSON_PATH, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=4)
+    st.success("Record has been successfully added to the JSON file!")
 
 # Styling the app
 st.set_page_config(page_title="Dental Clinic Dataroom", layout="wide")
@@ -94,10 +102,10 @@ def main():
 
         # Add download button
         st.download_button(
-            label="Download Data as CSV",
-            data=df.to_csv(index=False),
-            file_name="clinic_records.csv",
-            mime="text/csv",
+            label="Download Data as JSON",
+            data=json.dumps(df.to_dict(orient='records'), indent=4),
+            file_name="clinic_records.json",
+            mime="application/json",
         )
 
     elif choice == "Add New Record":
@@ -131,15 +139,12 @@ def main():
                     "Dentist": dentist,
                     "Procedure": procedure,
                     "Tooth/Teeth": tooth_teeth,
-                    "Cost": cost,
+                    "Cost": f"${cost:,.2f}",
                     "Payment Status": payment_status
                 }])
 
-                # Debug the path being used
-                st.write(f"Saving to file: {DATA_PATH}")
-
-                # Append the new record directly to the CSV
-                append_to_csv(new_record)
+                # Append the new record directly to the JSON
+                append_to_json(new_record)
 
                 # Display success message
                 st.success(f"Record for {name} added successfully!")
