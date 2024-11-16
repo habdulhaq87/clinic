@@ -17,10 +17,11 @@ def load_data():
         st.error(f"Data file not found at {DATA_PATH}. Please ensure the file exists.")
         st.stop()
 
-# Save the updated dataset
-def save_data(df):
-    df.to_csv(DATA_PATH, index=False)
-    st.success("Data has been successfully saved!")
+# Append a new record to the CSV file
+def append_to_csv(new_record):
+    # Convert the new record DataFrame to CSV format and append to the file
+    new_record.to_csv(DATA_PATH, mode='a', header=False, index=False)
+    st.success("Record has been successfully added to the CSV file!")
 
 # Styling the app
 st.set_page_config(page_title="Dental Clinic Dataroom", layout="wide")
@@ -127,11 +128,8 @@ def main():
                     "Payment Status": payment_status
                 }])
 
-                # Concatenate the new record with the existing DataFrame
-                df = pd.concat([df, new_record], ignore_index=True)
-
-                # Save updated DataFrame back to CSV
-                save_data(df)
+                # Append the new record directly to the CSV
+                append_to_csv(new_record)
 
                 # Display success message
                 st.success(f"Record for {name} added successfully!")
