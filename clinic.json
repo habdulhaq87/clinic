@@ -58,5 +58,17 @@
         "Tooth/Teeth": "",
         "Cost": "$0.00",
         "Payment Status": "Paid"
+    },
+    {
+        "Patient ID": "",
+        "Name": "",
+        "Contact": "",
+        "Appointment Date": "2024-11-16",
+        "Time": "09:36:00",
+        "Dentist": "",
+        "Procedure": "",
+        "Tooth/Teeth": "",
+        "Cost": "$0.00",
+        "Payment Status": "Paid"
     }
 ]
