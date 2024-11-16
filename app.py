@@ -3,7 +3,7 @@ import pandas as pd
 import os
 
 # Get the absolute path to the CSV file
-DATA_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "clinic.csv")
+DATA_PATH = os.path.abspath("clinic.csv")
 
 # Load the dataset
 @st.cache_data
@@ -24,7 +24,10 @@ def load_data():
 # Append a new record to the CSV file
 def append_to_csv(new_record):
     # Convert the new record DataFrame to CSV format and append to the file
-    new_record.to_csv(DATA_PATH, mode='a', header=False, index=False)
+    with open(DATA_PATH, mode='a', encoding='utf-8') as f:
+        new_record.to_csv(f, header=False, index=False)
+        f.flush()  # Ensure all data is written to the buffer
+        os.fsync(f.fileno())  # Force write to disk
     st.success("Record has been successfully added to the CSV file!")
 
 # Styling the app
@@ -131,6 +134,9 @@ def main():
                     "Cost": cost,
                     "Payment Status": payment_status
                 }])
+
+                # Debug the path being used
+                st.write(f"Saving to file: {DATA_PATH}")
 
                 # Append the new record directly to the CSV
                 append_to_csv(new_record)
