@@ -9,9 +9,13 @@ DATA_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "clinic.csv
 @st.cache_data
 def load_data():
     if os.path.exists(DATA_PATH):
-        # Load and clean the data
+        # Load the data
         df = pd.read_csv(DATA_PATH)
-        df["Cost"] = df["Cost"].astype(float)  # Ensure Cost is float
+
+        # Strip the '$' symbol from the 'Cost' column and convert to float
+        if "Cost" in df.columns:
+            df["Cost"] = df["Cost"].replace('[\$,]', '', regex=True).astype(float)
+
         return df
     else:
         st.error(f"Data file not found at {DATA_PATH}. Please ensure the file exists.")
