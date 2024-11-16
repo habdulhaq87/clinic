@@ -1,4 +1,3 @@
-# Update the clinic.json file with the provided data, replacing any existing content
 updated_data = [
     {
         "Patient ID": "P001",
