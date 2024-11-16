@@ -9,13 +9,18 @@ DATA_PATH = os.path.join(os.path.dirname(__file__), "clinic.csv")
 @st.cache_data
 def load_data():
     if os.path.exists(DATA_PATH):
-        # Load the data and clean the 'Cost' column
+        # Load and clean the data
         df = pd.read_csv(DATA_PATH)
         df["Cost"] = df["Cost"].str.replace("$", "").astype(float)  # Convert cost to float
         return df
     else:
         st.error(f"Data file not found at {DATA_PATH}. Please ensure the file exists.")
         st.stop()
+
+# Save the updated dataset
+def save_data(df):
+    df.to_csv(DATA_PATH, index=False)
+    st.success("Data has been successfully saved!")
 
 # Styling the app
 st.set_page_config(page_title="Dental Clinic Dataroom", layout="wide")
@@ -53,29 +58,29 @@ def main():
     st.sidebar.title("Dental Clinic Dataroom")
     st.sidebar.image(
         "https://via.placeholder.com/150x150.png?text=Clinic+Logo", 
-        use_container_width=True,  # Updated for Streamlit's latest API
+        use_container_width=True
     )
 
     # Load data
     df = load_data()
 
     # Navigation options
-    options = ["Home", "Patient Records", "Search Appointments", "Statistics"]
+    options = ["Dashboard", "View Records", "Add New Record", "Search Appointments", "Statistics"]
     choice = st.sidebar.radio("Select a page", options)
 
-    if choice == "Home":
+    if choice == "Dashboard":
         st.write("## Welcome to the Dental Clinic Dataroom!")
         st.markdown(
             """
-            This platform helps you manage patient data, track appointments, and visualize clinic statistics.
-            - **View patient records**: See a detailed view of patient appointments and treatments.
-            - **Search appointments**: Quickly find appointments by name or date.
-            - **Statistics**: Get insights into clinic performance and trends.
+            Use the sidebar to navigate through the app. Features include:
+            - Viewing and searching patient records.
+            - Adding new patient appointments.
+            - Viewing clinic statistics.
             """
         )
         st.image("https://via.placeholder.com/600x300.png?text=Clinic+Dashboard", use_container_width=True)
 
-    elif choice == "Patient Records":
+    elif choice == "View Records":
         st.write("## Patient Records")
         st.dataframe(df)
 
@@ -86,6 +91,44 @@ def main():
             file_name="clinic_records.csv",
             mime="text/csv",
         )
+
+    elif choice == "Add New Record":
+        st.write("## Add New Appointment Record")
+
+        with st.form("add_record_form", clear_on_submit=True):
+            col1, col2 = st.columns(2)
+            with col1:
+                patient_id = st.text_input("Patient ID", placeholder="E.g., P005")
+                name = st.text_input("Patient Name", placeholder="E.g., John Doe")
+                contact = st.text_input("Contact Number", placeholder="E.g., 123-456-7890")
+                appointment_date = st.date_input("Appointment Date")
+                time = st.time_input("Appointment Time")
+            with col2:
+                dentist = st.text_input("Dentist", placeholder="E.g., Dr. Smith")
+                procedure = st.text_input("Procedure", placeholder="E.g., Cleaning")
+                tooth_teeth = st.text_input("Tooth/Teeth Treated", placeholder="E.g., Upper Left Molar")
+                cost = st.number_input("Cost ($)", min_value=0.0, step=0.1)
+                payment_status = st.selectbox("Payment Status", ["Paid", "Unpaid", "Partial"])
+
+            # Submit button
+            submitted = st.form_submit_button("Add Record")
+            if submitted:
+                # Append new record to the DataFrame
+                new_record = {
+                    "Patient ID": patient_id,
+                    "Name": name,
+                    "Contact": contact,
+                    "Appointment Date": appointment_date.strftime("%Y-%m-%d"),
+                    "Time": time.strftime("%H:%M:%S"),
+                    "Dentist": dentist,
+                    "Procedure": procedure,
+                    "Tooth/Teeth": tooth_teeth,
+                    "Cost": cost,
+                    "Payment Status": payment_status
+                }
+                df = df.append(new_record, ignore_index=True)
+                save_data(df)
+                st.success(f"Record for {name} added successfully!")
 
     elif choice == "Search Appointments":
         st.write("## Search Appointments")
@@ -133,3 +176,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
