@@ -5,17 +5,18 @@ import os
 from github import Github
 
 # GitHub Repository Configuration
-GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")  # Add your token to an environment variable
+GITHUB_TOKEN = st.secrets["github"]["token"]  # Use Streamlit secrets for GitHub token
 REPO_NAME = "habdulhaq87/clinic"
 FILE_PATH = "clinic.json"  # Path to the file in the repository
 BRANCH_NAME = "main"
 
 # Initialize GitHub API
-if not GITHUB_TOKEN:
-    st.error("GitHub token is not set. Please set GITHUB_TOKEN environment variable.")
+try:
+    github = Github(GITHUB_TOKEN)
+    repo = github.get_repo(REPO_NAME)
+except Exception as e:
+    st.error(f"Error initializing GitHub API: {e}")
     st.stop()
-github = Github(GITHUB_TOKEN)
-repo = github.get_repo(REPO_NAME)
 
 # Load the dataset from GitHub
 @st.cache_data
@@ -73,6 +74,13 @@ def main():
         st.write("## Patient Records")
         st.dataframe(df)
 
+        st.download_button(
+            label="Download Records as JSON",
+            data=json.dumps(df.to_dict(orient="records"), indent=4),
+            file_name="clinic_records.json",
+            mime="application/json",
+        )
+
     elif choice == "Add New Record":
         st.write("## Add New Appointment Record")
 
@@ -120,6 +128,11 @@ def main():
         # Total Revenue
         total_revenue = df["Cost"].sum()
         st.metric(label="Total Revenue", value=f"${total_revenue:,.2f}")
+
+        # Payment Status Distribution
+        st.write("### Payment Status Distribution")
+        payment_status = df["Payment Status"].value_counts()
+        st.bar_chart(payment_status)
 
 if __name__ == "__main__":
     main()
