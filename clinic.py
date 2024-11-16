@@ -1,9 +1,17 @@
 import streamlit as st
 import pandas as pd
+import os
+
+# Define the path to your data file
+DATA_PATH = os.path.join(os.path.dirname(__file__), "clinic.csv")
 
 # Load the dataset
 def load_data():
-    return pd.read_csv('clinic.csv')
+    if os.path.exists(DATA_PATH):
+        return pd.read_csv(DATA_PATH)
+    else:
+        st.error(f"Data file not found at {DATA_PATH}. Please ensure the file exists.")
+        st.stop()
 
 # Main Streamlit app
 def main():
@@ -60,8 +68,12 @@ def main():
         st.metric(label="Total Patients", value=total_patients)
         
         # Total Revenue
-        total_revenue = df["Cost"].str.replace("$", "").astype(float).sum()
-        st.metric(label="Total Revenue", value=f"${total_revenue}")
+        try:
+            df["Cost"] = df["Cost"].str.replace("$", "").astype(float)
+            total_revenue = df["Cost"].sum()
+            st.metric(label="Total Revenue", value=f"${total_revenue}")
+        except Exception as e:
+            st.error("Error processing revenue data: " + str(e))
         
         # Payment Status Summary
         st.write("#### Payment Status Distribution")
