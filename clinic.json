@@ -1,4 +1,4 @@
-updated_data = [
+[
     {
         "Patient ID": "P001",
         "Name": "John Doe",
@@ -48,9 +48,3 @@ updated_data = [
         "Payment Status": "Paid"
     }
 ]
-
-# Save the updated data to clinic.json
-with open(json_file_path, "w", encoding="utf-8") as json_file:
-    json.dump(updated_data, json_file, indent=4)
-
-json_file_path
