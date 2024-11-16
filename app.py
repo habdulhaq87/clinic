@@ -9,7 +9,10 @@ DATA_PATH = os.path.join(os.path.dirname(__file__), "clinic.csv")
 @st.cache_data
 def load_data():
     if os.path.exists(DATA_PATH):
-        return pd.read_csv(DATA_PATH)
+        # Load the data and clean the 'Cost' column
+        df = pd.read_csv(DATA_PATH)
+        df["Cost"] = df["Cost"].str.replace("$", "").astype(float)  # Convert cost to float
+        return df
     else:
         st.error(f"Data file not found at {DATA_PATH}. Please ensure the file exists.")
         st.stop()
@@ -50,7 +53,7 @@ def main():
     st.sidebar.title("Dental Clinic Dataroom")
     st.sidebar.image(
         "https://via.placeholder.com/150x150.png?text=Clinic+Logo", 
-        use_column_width=True,
+        use_container_width=True,  # Updated for Streamlit's latest API
     )
 
     # Load data
@@ -70,11 +73,11 @@ def main():
             - **Statistics**: Get insights into clinic performance and trends.
             """
         )
-        st.image("https://via.placeholder.com/600x300.png?text=Clinic+Dashboard", use_column_width=True)
+        st.image("https://via.placeholder.com/600x300.png?text=Clinic+Dashboard", use_container_width=True)
 
     elif choice == "Patient Records":
         st.write("## Patient Records")
-        st.dataframe(df.style.format({"Cost": "${:.2f}"}))
+        st.dataframe(df)
 
         # Add download button
         st.download_button(
@@ -93,7 +96,7 @@ def main():
             filtered_data = df[df["Name"].str.contains(search_name, case=False, na=False)]
             if not filtered_data.empty:
                 st.success(f"Found {len(filtered_data)} record(s) for '{search_name}'")
-                st.dataframe(filtered_data.style.format({"Cost": "${:.2f}"}))
+                st.dataframe(filtered_data)
             else:
                 st.warning(f"No records found for '{search_name}'")
 
@@ -103,7 +106,7 @@ def main():
             filtered_date = df[df["Appointment Date"] == search_date.strftime("%Y-%m-%d")]
             if not filtered_date.empty:
                 st.success(f"Found {len(filtered_date)} appointment(s) on {search_date}")
-                st.dataframe(filtered_date.style.format({"Cost": "${:.2f}"}))
+                st.dataframe(filtered_date)
             else:
                 st.warning(f"No appointments found on {search_date}")
 
@@ -115,12 +118,8 @@ def main():
         st.metric(label="Total Patients", value=total_patients)
 
         # Total Revenue
-        try:
-            df["Cost"] = df["Cost"].str.replace("$", "").astype(float)
-            total_revenue = df["Cost"].sum()
-            st.metric(label="Total Revenue", value=f"${total_revenue:,.2f}")
-        except Exception as e:
-            st.error("Error processing revenue data: " + str(e))
+        total_revenue = df["Cost"].sum()
+        st.metric(label="Total Revenue", value=f"${total_revenue:,.2f}")
 
         # Payment Status Distribution
         st.write("### Payment Status Distribution")
